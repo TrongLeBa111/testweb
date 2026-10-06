@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report.html</h1>
+    <p>Report generated on 01-Nov-2025 at 10:37:51 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">41 tests took 00:04:25.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" />
+            <span class="failed">8 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">33 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" />
+            <span class="error">7 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.12.5&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.19045-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.4.2&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;anyio&#34;: &#34;4.8.0&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;}}, &#34;tests&#34;: {&#34;tests/test_admin.py::TestAdminLogin::test_login_fail&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminLogin::test_login_fail&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminLogin::test_login_fail&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\n==================================================\n\ud83d\ude80 B\u1eaft \u0111\u1ea7u Test Suite\n==================================================\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Element visible: #login-popup\n\u2705 Element visible: #error-message\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminLogin::test_login_success&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminLogin::test_login_success&#34;, &#34;duration&#34;: &#34;00:00:02&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminLogin::test_login_success&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:02&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Element visible: #sidebar\n\u2705 Element visible: #main__dashboard\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_products&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_products&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminNavigation::test_navigate_to_products&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Element visible: #product-table-content__body\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_customers&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_customers&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminNavigation::test_navigate_to_customers&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n\u2705 Element visible: #main__customers\n\u2705 Element visible: #customer-table-content__body\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_orders&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_orders&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminNavigation::test_navigate_to_orders&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Element visible: #orders-table-content__body\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_statistics&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminNavigation::test_navigate_to_statistics&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminNavigation::test_navigate_to_statistics&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Element visible: #statistics-product-table__body\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestDashboardDisplay::test_dashboard_elements&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestDashboardDisplay::test_dashboard_elements&#34;, &#34;duration&#34;: &#34;00:00:02&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestDashboardDisplay::test_dashboard_elements&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:02&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Element visible: #main__dashboard\n\u2705 Element visible: .products\n\u2705 Element visible: .box-product\n\u2705 Element visible: .order\n\u2705 Element visible: .box-order\n\u2705 Element visible: .customers\n\u2705 Element visible: .customer__chart\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestDashboardDisplay::test_sidebar_menu_items&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestDashboardDisplay::test_sidebar_menu_items&#34;, &#34;duration&#34;: &#34;00:00:02&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestDashboardDisplay::test_sidebar_menu_items&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:02&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Element visible: #sidebar__dashboard\n\u2705 Element visible: #sidebar__products\n\u2705 Element visible: #sidebar__customers\n\u2705 Element visible: #sidebar__orders\n\u2705 Element visible: #sidebar__statistics\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminUIInteractions::test_sidebar_collapse&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminUIInteractions::test_sidebar_collapse&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminUIInteractions::test_sidebar_collapse&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Element visible: #sidebar\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_admin.py::TestAdminUIInteractions::test_active_menu_highlight&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_admin.py::TestAdminUIInteractions::test_active_menu_highlight&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_admin.py::TestAdminUIInteractions::test_active_menu_highlight&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_view_analytics_page&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_view_analytics_page&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_view_analytics_page&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Element visible: #statistics-product-table__body\n\u2705 Element visible: #statistics-customer-table__body\n\u2705 Trang th\u1ed1ng k\u00ea hi\u1ec3n th\u1ecb \u0111\u1ea7y \u0111\u1ee7\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_statistics_product_has_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_statistics_product_has_data&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_statistics_product_has_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Th\u1ed1ng k\u00ea 3 s\u1ea3n ph\u1ea9m\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_statistics_customer_has_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_statistics_customer_has_data&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_statistics_customer_has_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Th\u1ed1ng k\u00ea 1 kh\u00e1ch h\u00e0ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_filter_statistics_by_date&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_filter_statistics_by_date&#34;, &#34;duration&#34;: &#34;00:00:08&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_filter_statistics_by_date&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:08&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Clicked: #statistics__date-btn\n\u2705 L\u1ecdc ng\u00e0y: 3 \u2192 3 s\u1ea3n ph\u1ea9m\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_reset_statistics_filter&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_reset_statistics_filter&#34;, &#34;duration&#34;: &#34;00:00:09&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_reset_statistics_filter&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:09&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Clicked: #statistics__date-btn\n\u2705 Clicked: #statistics__date-reset-btn\n\u2705 Reset filter th\u00e0nh c\u00f4ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_view_total_revenue&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_view_total_revenue&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_view_total_revenue&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Element visible: #statistics-product__total-revenue\n\u2705 Element visible: #statistics-customer__total-revenue\n\u2705 Doanh thu s\u1ea3n ph\u1ea9m: 280.890.000\u00a0\u20ab\n\u2705 Doanh thu kh\u00e1ch h\u00e0ng: 280.890.000\u00a0\u20ab\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_view_special_products&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_view_special_products&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_view_special_products&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Element visible: #statistics-product__special-product\n\u2705 Element visible: #bestProduct\n\u2705 S\u1ea3n ph\u1ea9m ch\u1ea1y nh\u1ea5t: \n                                    S\u1ea3n ph\u1ea9m ch\u1ea1y nh\u1ea5t\n                                    T\u00ean: Samsung Galaxy S23 Ultra \n                                    Doanh s\u1ed1: 6 \n                                \n\u2705 Element visible: #worstProduct\n\u2705 S\u1ea3n ph\u1ea9m \u1ebf nh\u1ea5t: \n                                    S\u1ea3n ph\u1ea9m \u1ebf nh\u1ea5t\n                                    T\u00ean: Xiaomi 13 Pro \n                                    Doanh s\u1ed1: 3 \n                                \n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_top_customers_filter&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_top_customers_filter&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_top_customers_filter&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Hi\u1ec3n th\u1ecb top 1 kh\u00e1ch h\u00e0ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalytics::test_view_statistics_bill&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalytics::test_view_statistics_bill&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalytics::test_view_statistics_bill&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n\u2705 Element visible: #modal-detailStatistic\n\u2705 Modal h\u00f3a \u0111\u01a1n th\u1ed1ng k\u00ea hi\u1ec3n th\u1ecb\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_analytics.py::TestAnalyticsIntegration::test_analytics_complete_workflow&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_analytics.py::TestAnalyticsIntegration::test_analytics_complete_workflow&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_analytics.py::TestAnalyticsIntegration::test_analytics_complete_workflow&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__statistics a\n\u2705 Element visible: #main__statistics\n1\ufe0f\u20e3 T\u1ed5ng quan: 3 SP, 1 KH\n\u2705 Clicked: #statistics__date-btn\n2\ufe0f\u20e3 Sau filter: 3 s\u1ea3n ph\u1ea9m\n3\ufe0f\u20e3 Top customers: 1\n\u2705 Clicked: #statistics__date-reset-btn\n4\ufe0f\u20e3 Sau reset: 3 s\u1ea3n ph\u1ea9m\n\u2728 Analytics workflow ho\u00e0n t\u1ea5t!\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerDisplay::test_customer_table_display&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerDisplay::test_customer_table_display&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerDisplay::test_customer_table_display&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_customer.TestCustomerDisplay object at 0x0000019AEA806FF0&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_customer.py:23: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\base_test.py:37: in assert_element_visible\n    assert_element_visible(page, selector, message)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\nselector = &amp;#x27;.table-content&amp;#x27;, message = &amp;#x27;&amp;#x27;\n\n    def assert_element_visible(page, selector, message=&amp;quot;&amp;quot;):\n        &amp;quot;&amp;quot;&amp;quot;Assert element is visible&amp;quot;&amp;quot;&amp;quot;\n        is_visible = wait_for_element_visible(page, selector, timeout=SHORT_TIMEOUT)\n&amp;gt;       assert is_visible, message or f&amp;quot;Element {selector} should be visible&amp;quot;\n               ^^^^^^^^^^\nE       AssertionError: Element .table-content should be visible\n\ntests\\utils\\helpers.py:71: AssertionError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n\u2705 Element visible: #main__customers\n\u274c Element not visible: .table-content\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerDisplay::test_customer_form_display&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerDisplay::test_customer_form_display&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerDisplay::test_customer_form_display&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n\u2705 Element visible: #add-customer-form\n\u2705 Element visible: #new-customer-name\n\u2705 Element visible: #new-customer-password\n\u2705 Element visible: #new-customer-phone\n\u2705 Element visible: #new-customer-address\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerForm::test_add_customer_form_fields&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerForm::test_add_customer_form_fields&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerForm::test_add_customer_form_fields&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerForm::test_reset_customer_form&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerForm::test_reset_customer_form&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerForm::test_reset_customer_form&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerActions::test_customer_action_buttons&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerActions::test_customer_action_buttons&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerActions::test_customer_action_buttons&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_customer.py::TestCustomerActions::test_edit_customer_popup&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerActions::test_edit_customer_popup&#34;, &#34;duration&#34;: &#34;00:00:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerActions::test_edit_customer_popup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:20&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_customer.TestCustomerActions object at 0x0000019AEA807AA0&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_customer.py:123: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:2142: in click\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_element_handle.py:142: in click\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAE47E20&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: ElementHandle.click: Target page, context or browser has been closed\nE           Call log:\nE             - attempting click action\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE               - waiting 20ms\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE                 - waiting 100ms\nE               32 \u00d7 waiting for element to be visible, enabled and stable\nE                  - element is not visible\nE                - retrying click action\nE                  - waiting 500ms\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerActions::test_edit_customer_popup::teardown&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerActions::test_edit_customer_popup::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEADA3E20&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n&#34;}], &#34;tests/test_customer.py::TestCustomerActions::test_close_edit_customer_popup&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerActions::test_close_edit_customer_popup&#34;, &#34;duration&#34;: &#34;00:00:28&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerActions::test_close_edit_customer_popup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:28&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_customer.TestCustomerActions object at 0x0000019AEA807CB0&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_customer.py:142: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:2142: in click\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_element_handle.py:142: in click\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEADA11C0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: ElementHandle.click: Target page, context or browser has been closed\nE           Call log:\nE             - attempting click action\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE               - waiting 20ms\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE                 - waiting 100ms\nE               47 \u00d7 waiting for element to be visible, enabled and stable\nE                  - element is not visible\nE                - retrying click action\nE                  - waiting 500ms\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerActions::test_close_edit_customer_popup::teardown&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerActions::test_close_edit_customer_popup::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAD5B560&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n&#34;}], &#34;tests/test_customer.py::TestCustomerPagination::test_pagination_display&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_customer.py::TestCustomerPagination::test_pagination_display&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_customer.py::TestCustomerPagination::test_pagination_display&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__customers a\n\u2705 Element visible: #pagination-customers\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrder::test_order_display_with_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_order_display_with_data&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_order_display_with_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Element visible: #orders-table-content__body\n\u2705 Hi\u1ec3n th\u1ecb 4 \u0111\u01a1n h\u00e0ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrder::test_filter_order_by_date&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_filter_order_by_date&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_filter_order_by_date&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\ud83d\udce6 \u0110\u00e3 seed 2 \u0111\u01a1n h\u00e0ng test\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Clicked: #filter__date-btn\n\u2705 Element visible: #orders-table-content__body\n\u2705 Filter theo ng\u00e0y tr\u1ea3 v\u1ec1 1 \u0111\u01a1n h\u00e0ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrder::test_filter_order_by_status&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_filter_order_by_status&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_filter_order_by_status&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Element visible: #orders-table-content__body\n\u2705 C\u00f3 2 \u0111\u01a1n h\u00e0ng ch\u01b0a x\u1eed l\u00fd\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrder::test_view_order_detail&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_view_order_detail&#34;, &#34;duration&#34;: &#34;00:00:21&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_view_order_detail&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:21&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_order.TestOrder object at 0x0000019AEA834620&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_order.py:118: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:2142: in click\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_element_handle.py:142: in click\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAEA1260&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: ElementHandle.click: Target page, context or browser has been closed\nE           Call log:\nE             - attempting click action\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE               - waiting 20ms\nE               2 \u00d7 waiting for element to be visible, enabled and stable\nE                 - element is not visible\nE               - retrying click action\nE                 - waiting 100ms\nE               32 \u00d7 waiting for element to be visible, enabled and stable\nE                  - element is not visible\nE                - retrying click action\nE                  - waiting 500ms\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_view_order_detail::teardown&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_view_order_detail::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEA83DEE0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n&#34;}], &#34;tests/test_order.py::TestOrder::test_reset_order_filter&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_reset_order_filter&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_reset_order_filter&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Clicked: #order__reset-filter-btn\n\u2705 Reset filter th\u00e0nh c\u00f4ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrder::test_sort_order_by_district&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrder::test_sort_order_by_district&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrder::test_sort_order_by_district&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n\u2705 Clicked: #order__sort-by-district\n\u2705 Element visible: #orders-table-content__body\n\u2705 S\u1eafp x\u1ebfp th\u00e0nh c\u00f4ng, hi\u1ec3n th\u1ecb 4 \u0111\u01a1n h\u00e0ng\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_order.py::TestOrderIntegration::test_order_complete_workflow&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrderIntegration::test_order_complete_workflow&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrderIntegration::test_order_complete_workflow&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_order.TestOrderIntegration object at 0x0000019AEA834D10&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_order.py:215: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:10142: in fill\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:897: in fill\n    return await self._main_frame.fill(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:590: in fill\n    await self._fill(**locals_to_params(locals()))\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:602: in _fill\n    await self._channel.send(&amp;quot;fill&amp;quot;, self._timeout, locals_to_params(locals()))\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAC049A0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.fill: Target page, context or browser has been closed\nE           Call log:\nE             - waiting for locator(&amp;quot;#order__date-end&amp;quot;)\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n1\ufe0f\u20e3 Initial: 4 \u0111\u01a1n h\u00e0ng\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_order.py::TestOrderIntegration::test_order_complete_workflow::teardown&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_order.py::TestOrderIntegration::test_order_complete_workflow::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAE240E0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__orders a\n\u2705 Element visible: #main__orders\n1\ufe0f\u20e3 Initial: 4 \u0111\u01a1n h\u00e0ng\n&#34;}], &#34;tests/test_product.py::TestProduct::test_view_products_list&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_view_products_list&#34;, &#34;duration&#34;: &#34;00:00:03&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_view_products_list&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:03&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_product.TestProduct object at 0x0000019AEA835430&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_product.py:25: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:11496: in wait_for_timeout\n    self._sync(self._impl_obj.wait_for_timeout(timeout=timeout))\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:1104: in wait_for_timeout\n    await self._main_frame.wait_for_timeout(timeout)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:844: in wait_for_timeout\n    await self._channel.send(&amp;quot;waitForTimeout&amp;quot;, None, {&amp;quot;waitTimeout&amp;quot;: timeout})\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAD754E0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.wait_for_timeout: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_view_products_list::teardown&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_view_products_list::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAD77CE0&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n&#34;}], &#34;tests/test_product.py::TestProduct::test_add_product_success&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_add_product_success::setup&#34;, &#34;duration&#34;: &#34;924 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_add_product_success::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;924 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:35: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:9019: in goto\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:556: in goto\n    return await self._main_frame.goto(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:153: in goto\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEAD75D00&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.goto: Target page, context or browser has been closed\nE           Call log:\nE             - navigating to &amp;quot;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;quot;, waiting until &amp;quot;networkidle&amp;quot;\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n&#34;}], &#34;tests/test_product.py::TestProduct::test_search_product&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_search_product&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_search_product&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Element visible: #product-table-content__body\n\u2705 T\u00ecm th\u1ea5y 9 s\u1ea3n ph\u1ea9m v\u1edbi t\u1eeb kh\u00f3a &amp;#x27;Samsung&amp;#x27;\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_product.py::TestProduct::test_filter_product_by_brand&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_filter_product_by_brand&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_filter_product_by_brand&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Element visible: #product-table-content__body\n\u2705 L\u1ecdc Samsung: 9 s\u1ea3n ph\u1ea9m\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_product.py::TestProduct::test_view_product_details&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_view_product_details&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_view_product_details&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Element visible: #modal-detailproduct\n\u2705 Element visible: #detail-name\n\u2705 Modal chi ti\u1ebft s\u1ea3n ph\u1ea9m hi\u1ec3n th\u1ecb\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_product.py::TestProduct::test_pagination_products&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProduct::test_pagination_products&#34;, &#34;duration&#34;: &#34;00:00:04&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProduct::test_pagination_products&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:04&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_product.TestProduct object at 0x0000019AEA835E80&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\nE   TypeError: argument of type &amp;#x27;NoneType&amp;#x27; is not iterable\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_product.py:160: TypeError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Element visible: #pagination-products\n--------------------------- Captured stdout teardown ---------------------------\n\ud83d\uddd1\ufe0f  \u0110\u00e3 x\u00f3a to\u00e0n b\u1ed9 d\u1eef li\u1ec7u test\n&#34;}], &#34;tests/test_product.py::TestProductValidation::test_add_product_missing_required_fields&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProductValidation::test_add_product_missing_required_fields&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProductValidation::test_add_product_missing_required_fields&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_product.TestProductValidation object at 0x0000019AEA836120&amp;gt;\nbrowser_page = &amp;lt;Page url=&amp;#x27;http://127.0.0.1:5500/twilight_admin_K23_2024/index_admin.html&amp;#x27;&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\test_product.py:193: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\helpers.py:119: in verify_alert_message\n    page.wait_for_selector(alert_selector, state=&amp;quot;visible&amp;quot;, timeout=timeout)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8182: in wait_for_selector\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:423: in wait_for_selector\n    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:369: in wait_for_selector\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEADDEB60&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.wait_for_selector: Target page, context or browser has been closed\nE           Call log:\nE             - waiting for locator(&amp;quot;#custom-alert .custom-alert__msg&amp;quot;) to be visible\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Clicked: button.add-btn\n--------------------------- Captured stdout teardown ---------------------------\n\n==================================================\n\u2728 K\u1ebft th\u00fac Test Suite\n==================================================\n&#34;}, {&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;tests/test_product.py::TestProductValidation::test_add_product_missing_required_fields::teardown&#34;, &#34;duration&#34;: &#34;00:00:01&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_product.py::TestProductValidation::test_add_product_missing_required_fields::teardown&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:01&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;browser = &amp;lt;Browser type=&amp;lt;BrowserType name=chromium executable_path=C:\\Users\\3551\\AppData\\Local\\ms-playwright\\chromium-1187\\chrome-win\\chrome.exe&amp;gt; version=140.0.7339.16&amp;gt;\n\n&amp;gt;   ???\n\nD:\\web\\841419_Thu2_T12345_N2\\test\\conftest.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \ntests\\utils\\data_seeder.py:174: in clear_all_data\n    self.page.evaluate(&amp;quot;localStorage.clear()&amp;quot;)\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\sync_api\\_generated.py:8531: in evaluate\n    self._sync(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_page.py:468: in evaluate\n    return await self._main_frame.evaluate(expression, arg)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_frame.py:320: in evaluate\n    await self._channel.send(\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:69: in send\n    return await self._connection.wrap_api_call(\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = &amp;lt;playwright._impl._connection.Connection object at 0x0000019AEA807140&amp;gt;\ncb = &amp;lt;function Channel.send.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000019AEADDEC00&amp;gt;, is_internal = False\ntitle = None\n\n    async def wrap_api_call(\n        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None\n    ) -&amp;gt; Any:\n        if self._api_zone.get():\n            return await cb()\n        task = asyncio.current_task(self._loop)\n        st: List[inspect.FrameInfo] = getattr(\n            task, &amp;quot;__pw_stack__&amp;quot;, None\n        ) or inspect.stack(0)\n    \n        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)\n        self._api_zone.set(parsed_st)\n        try:\n            return await cb()\n        except Exception as error:\n&amp;gt;           raise rewrite_error(error, f&amp;quot;{parsed_st[&amp;#x27;apiName&amp;#x27;]}: {error}&amp;quot;) from None\nE           playwright._impl._errors.TargetClosedError: Page.evaluate: Target page, context or browser has been closed\n\nC:\\Users\\3551\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright\\_impl\\_connection.py:558: TargetClosedError\n\n---------------------------- Captured stdout setup -----------------------------\n\ud83c\udf31 B\u1eaft \u0111\u1ea7u seed d\u1eef li\u1ec7u test...\n\u2705 \u0110\u00e3 seed 5 customers\n\u2705 \u0110\u00e3 seed 20 orders\n\u2705 \u0110\u00e3 seed cart v\u1edbi 3 s\u1ea3n ph\u1ea9m\n\u2728 Ho\u00e0n t\u1ea5t seed d\u1eef li\u1ec7u test!\n\n----------------------------- Captured stdout call -----------------------------\n\u2705 Login admin th\u00e0nh c\u00f4ng\n\u2705 Clicked: #sidebar__products a\n\u2705 Element visible: #main__products\n\u2705 Clicked: button.add-btn\n\n--------------------------- Captured stdout teardown ---------------------------\n\n==================================================\n\u2728 K\u1ebft th\u00fac Test Suite\n==================================================\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>

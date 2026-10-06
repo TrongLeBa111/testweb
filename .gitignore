@@ -1,0 +1,26 @@
+# Loại trừ báo cáo tài liệu
+*.docx
+*.doc
+*.pdf
+*.pptx
+*.ppt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Fonts library (quá lớn, dùng CDN thay thế)
+twilight-store/accessts/fonts/fontawesome-free-6.6.0-web/

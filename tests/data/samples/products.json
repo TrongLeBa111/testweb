@@ -1,0 +1,12 @@
+[
+    {
+        "name": "Samsung Galaxy Test",
+        "brand": "SAMSUNG",
+        "versions": 1,
+        "price": 25000000,
+        "chip": "Snapdragon 888",
+        "battery": "5000mAh",
+        "screen_size": "6.7",
+        "refresh_rate": "120Hz"
+    }
+]
